@@ -1,7 +1,7 @@
 Summary: Displays who is logged in to local network machines
 Name: rwho
 Version: 0.17
-Release: 52%{?dist}
+Release: 54%{?dist}
 # part of rwhod is under GPL+, other parts are under BSD
 License: BSD and GPL+
 Group: System Environment/Daemons
@@ -98,6 +98,12 @@ install -m 644 %SOURCE1 ${RPM_BUILD_ROOT}%{_unitdir}/rwhod.service
 %{_unitdir}/*
 
 %changelog
+* Fri Jan 24 2014 Daniel Mach <dmach@redhat.com> - 0.17-54
+- Mass rebuild 2014-01-24
+
+* Fri Dec 27 2013 Daniel Mach <dmach@redhat.com> - 0.17-53
+- Mass rebuild 2013-12-27
+
 * Mon Jul 29 2013 Honza Horak <hhorak@redhat.com> - 0.17-52
 - Use systemd instead of systemd-units
 
