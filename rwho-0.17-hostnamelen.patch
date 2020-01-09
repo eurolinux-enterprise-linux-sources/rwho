@@ -1,0 +1,84 @@
+diff -up netkit-rwho-0.17/ruptime/ruptime.1.hostnamelen netkit-rwho-0.17/ruptime/ruptime.1
+--- netkit-rwho-0.17/ruptime/ruptime.1.hostnamelen	2000-07-31 01:57:06.000000000 +0200
++++ netkit-rwho-0.17/ruptime/ruptime.1	2011-12-07 15:41:10.009068689 +0100
+@@ -41,6 +41,7 @@
+ .Sh SYNOPSIS
+ .Nm ruptime
+ .Op Fl alrtu
++.Op Fl n=length
+ .Sh DESCRIPTION
+ .Nm Ruptime
+ gives a status line like
+@@ -65,6 +66,8 @@ Reverses the sort order.
+ Sort by uptime.
+ .It Fl u
+ Sort by number of users.
++.It Fl n=length
++Specify hostname length in output.
+ .El
+ .Pp
+ The default listing is sorted by host name.
+diff -up netkit-rwho-0.17/ruptime/ruptime.c.hostnamelen netkit-rwho-0.17/ruptime/ruptime.c
+--- netkit-rwho-0.17/ruptime/ruptime.c.hostnamelen	2011-12-07 15:40:54.566069745 +0100
++++ netkit-rwho-0.17/ruptime/ruptime.c	2011-12-07 15:40:54.690069736 +0100
+@@ -66,6 +66,7 @@ struct hs {
+ 
+ #define	ISDOWN(h)	(now - (h)->hs_recvtime > 11 * 60)
+ #define	WHDRSIZE	((int)(sizeof (awhod) - sizeof (awhod.wd_we)))
++#define HOSTNAMELEN 12
+ 
+ static size_t nhosts, hspace = 20;
+ static struct hs *hs;
+@@ -93,10 +94,11 @@ main(int argc, char **argv)
+ 	unsigned i;
+ 	struct whod buf;
+ 	int (*cmp)(const void *, const void *) = hscmp;
++	int hostnamelen = HOSTNAMELEN;
+ 	time_t correction;
+ 
+ 	aflg = 0;
+-	while ((ch = getopt(argc, argv, "alrut")) != -1)
++	while ((ch = getopt(argc, argv, "alrutn:")) != -1)
+ 		switch((char)ch) {
+ 		case 'a':
+ 			aflg = 1;
+@@ -113,8 +115,15 @@ main(int argc, char **argv)
+ 		case 'u':
+ 			cmp = ucmp;
+ 			break;
++		case 'n':
++			hostnamelen = atoi(optarg+1);
++			if(hostnamelen < 0){
++				fprintf(stderr,"Error, hostname length can't be negative number!\n");
++				exit(1);
++			}
++			break;
+ 		default: 
+-			(void)fprintf(stderr, "usage: ruptime [-alrut]\n");
++			(void)fprintf(stderr, "usage: ruptime [-alrutn]\n");
+ 			exit(1);
+ 		}
+ 
+@@ -182,15 +191,20 @@ main(int argc, char **argv)
+ 	}
+ 	(void)time(&now);
+ 	qsort(hs, nhosts, sizeof(hs[0]), cmp);
++	char output_format[512];
++	char *down_pattern = "%%-%i.%is%%s\n";
++	char *up_pattern = "%%-%i.%is%%s,  %%4d user%%s  load %%*.2f, %%*.2f, %%*.2f\n";
+ 	for (i = 0; i < nhosts; i++) {
+ 		hsp = &hs[i];
+ 		if (ISDOWN(hsp)) {
+-			(void)printf("%-12.12s%s\n", hsp->hs_hostname,
++			sprintf(output_format, down_pattern, hostnamelen,hostnamelen);
++			(void)printf(output_format, hsp->hs_hostname,
+ 			    interval(now - hsp->hs_recvtime, "down"));
+ 			continue;
+ 		}
++		sprintf(output_format, up_pattern, hostnamelen,hostnamelen);
+ 		(void)printf(
+-		    "%-12.12s%s,  %4d user%s  load %*.2f, %*.2f, %*.2f\n",
++		    output_format,
+ 		    hsp->hs_hostname,
+ 		    interval((time_t)hsp->hs_sendtime -
+ 			(time_t)hsp->hs_boottime, "  up"),

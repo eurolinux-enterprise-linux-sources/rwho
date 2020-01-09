@@ -1,0 +1,24 @@
+diff -up netkit-rwho-0.17/ruptime/ruptime.c.stderr netkit-rwho-0.17/ruptime/ruptime.c
+--- netkit-rwho-0.17/ruptime/ruptime.c.stderr	2012-11-07 08:29:27.024731591 +0100
++++ netkit-rwho-0.17/ruptime/ruptime.c	2012-11-07 08:29:52.906741963 +0100
+@@ -186,7 +186,7 @@ main(int argc, char **argv)
+ 		hsp++;
+ 	}
+ 	if (!nhosts) {
+-		(void)printf("ruptime: no hosts in %s.\n", _PATH_RWHODIR);
++		(void)fprintf(stderr, "ruptime: no hosts in %s.\n", _PATH_RWHODIR);
+ 		exit(1);
+ 	}
+ 	(void)time(&now);
+diff -up netkit-rwho-0.17/rwho/rwho.c.stderr netkit-rwho-0.17/rwho/rwho.c
+--- netkit-rwho-0.17/rwho/rwho.c.stderr	2012-11-07 08:37:47.539978797 +0100
++++ netkit-rwho-0.17/rwho/rwho.c	2012-11-07 08:33:00.651829733 +0100
+@@ -155,7 +155,7 @@ main(int argc, char *argv[])
+ 				continue;
+ 			}
+ 			if (nusers >= NUSERS) {
+-				printf("too many users\n");
++				fprintf(stderr, "too many users\n");
+ 				exit(1);
+ 			}
+ 

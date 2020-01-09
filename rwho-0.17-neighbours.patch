@@ -1,0 +1,33 @@
+diff -up netkit-rwho-0.17/rwhod/rwhod.c.neighbours netkit-rwho-0.17/rwhod/rwhod.c
+--- netkit-rwho-0.17/rwhod/rwhod.c.neighbours	2011-06-01 18:26:01.913226552 +0200
++++ netkit-rwho-0.17/rwhod/rwhod.c	2011-06-01 18:28:44.434226510 +0200
+@@ -383,6 +383,8 @@ broadcaster()
+ 	getboottime(&mywd);
+ 
+ 	while (1) {
++		if (!configure(sk))
++			exit(1);
+ 		sendpacket(&mywd);
+ 		(void) sleep(AL_INTERVAL);
+ 	}
+@@ -603,6 +605,20 @@ configure(int s)
+ 	struct sockaddr_in *sn;
+ 	register struct neighbor *np;
+ 
++	/* forget previous neighbors; interfaces may have changed */
++	for (np = neighbors; np != NULL; ) {
++		register struct neighbor *pp;
++ 
++		if(np->n_name)
++			free(np->n_name);
++		if(np->n_addr)
++			free(np->n_addr);
++		pp = np;
++		np = np->n_next;
++		free((char *)pp);
++	}
++	neighbors = 0;
++
+ 	ifc.ifc_len = sizeof (buf);
+ 	ifc.ifc_buf = (char *)buf;
+ 	if (ioctl(s, SIOCGIFCONF, &ifc) < 0) {
